@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from rag import retrieve, answer
+from graph import run
 
-app = FastAPI(title="RAG API")
+app = FastAPI(title="RAG Multi-Agent API")
 
 class Query(BaseModel):
     question: str
@@ -13,8 +13,11 @@ def home():
 
 @app.post("/ask")
 def ask(q: Query):
-    chunks = retrieve(q.question)
+    r = run(q.question)
     return {
-        "answer": answer(q.question, chunks),
-        "sources": sorted({c["page"] for c in chunks}),
+        "answer": r["answer"],
+        "route": r["route"],
+        "valid": r["valid"],
+        "attempts": r["attempts"],
+        "sources": sorted({c["page"] for c in r["chunks"]}),
     }
